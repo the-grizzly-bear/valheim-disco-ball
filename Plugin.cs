@@ -59,13 +59,19 @@ namespace DiscoBall
                 Object.DestroyImmediate(area);
             }
 
-            GameObject wire = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            Object.DestroyImmediate(wire.GetComponent<Collider>());
-            wire.name = "DiscoBallWire";
-            wire.transform.SetParent(item.transform, false);
-            wire.transform.localPosition = Vector3.down * (HangDistance * 0.5f);
-            wire.transform.localScale = new Vector3(0.05f, HangDistance * 0.5f, 0.05f);
-            wire.GetComponent<MeshRenderer>().sharedMaterial = CreateFlatColorMaterial(new Color(0.2f, 0.2f, 0.2f));
+            GameObject chainGo = new GameObject("DiscoBallChain");
+            chainGo.transform.SetParent(item.transform, false);
+            LineRenderer chain = chainGo.AddComponent<LineRenderer>();
+            chain.useWorldSpace = false;
+            chain.loop = false;
+            chain.positionCount = 2;
+            chain.SetPositions(new[] { Vector3.zero, Vector3.down * HangDistance });
+            chain.widthMultiplier = 0.08f;
+            chain.material = CreateChainMaterial();
+            chain.textureMode = LineTextureMode.Tile;
+            chain.numCapVertices = 0;
+            chain.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            chain.receiveShadows = false;
 
             GameObject ball = new GameObject("DiscoBallMesh");
             ball.transform.SetParent(item.transform, false);
@@ -177,6 +183,22 @@ namespace DiscoBall
             mesh.uv = newUv;
             mesh.triangles = triangles;
             mesh.RecalculateNormals();
+        }
+
+        private static Material CreateChainMaterial()
+        {
+            Texture2D texture = new Texture2D(1, 8, TextureFormat.RGBA32, false);
+            texture.wrapMode = TextureWrapMode.Repeat;
+            texture.filterMode = FilterMode.Point;
+            Color link = new Color(0.35f, 0.35f, 0.38f);
+            Color gap = new Color(0.05f, 0.05f, 0.05f);
+            texture.SetPixels(new[] { link, link, link, gap, link, link, link, gap });
+            texture.Apply();
+
+            Material material = new Material(Shader.Find("Sprites/Default"));
+            material.mainTexture = texture;
+            material.mainTextureScale = new Vector2(1f, 10f);
+            return material;
         }
 
         private static Material CreateFlatColorMaterial(Color color)
