@@ -15,8 +15,8 @@ namespace DiscoBall
         public const string PluginName = "DiscoBall";
         public const string PluginVersion = "1.0.0";
 
-        private const float WireLength = 0.5f;
-        private const float BallRadius = 0.5f;
+        private const float WireLength = 0.3f;
+        private const float BallRadius = 0.35f;
 
         private static readonly Color[] LightColors =
         {
@@ -60,13 +60,21 @@ namespace DiscoBall
                 Object.DestroyImmediate(area);
             }
 
-            GameObject wire = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            Object.DestroyImmediate(wire.GetComponent<Collider>());
-            wire.name = "DiscoBallWire";
-            wire.transform.SetParent(item.transform, false);
-            wire.transform.localPosition = Vector3.down * (WireLength * 0.5f);
-            wire.transform.localScale = new Vector3(0.05f, WireLength * 0.5f, 0.05f);
-            wire.GetComponent<MeshRenderer>().sharedMaterial = CreateFlatColorMaterial(new Color(0.2f, 0.2f, 0.2f));
+            Material chainMaterial = CreateFlatColorMaterial(new Color(0.2f, 0.2f, 0.2f));
+            const int chainLinkCount = 4;
+            float slot = WireLength / chainLinkCount;
+            float linkHeight = slot * 0.5f;
+            for (int i = 0; i < chainLinkCount; i++)
+            {
+                GameObject link = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                Object.DestroyImmediate(link.GetComponent<Collider>());
+                link.name = "DiscoBallChainLink" + i;
+                link.transform.SetParent(item.transform, false);
+                link.transform.localPosition = Vector3.down * (slot * (i + 0.5f));
+                link.transform.localRotation = i % 2 == 0 ? Quaternion.identity : Quaternion.Euler(0f, 0f, 90f);
+                link.transform.localScale = new Vector3(0.07f, linkHeight * 0.5f, 0.07f);
+                link.GetComponent<MeshRenderer>().sharedMaterial = chainMaterial;
+            }
 
             GameObject ball = new GameObject("DiscoBallMesh");
             ball.transform.SetParent(item.transform, false);
