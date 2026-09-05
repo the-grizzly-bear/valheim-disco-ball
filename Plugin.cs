@@ -15,7 +15,8 @@ namespace DiscoBall
         public const string PluginName = "DiscoBall";
         public const string PluginVersion = "1.0.0";
 
-        private const float HangDistance = 0.5f;
+        private const float WireLength = 0.5f;
+        private const float BallRadius = 0.5f;
 
         private static readonly Color[] LightColors =
         {
@@ -44,7 +45,7 @@ namespace DiscoBall
                 Object.DestroyImmediate(fireplace);
             }
 
-            Vector3 ballPosition = Vector3.down * HangDistance;
+            Vector3 ballPosition = Vector3.down * (WireLength + BallRadius);
 
             foreach (string childName in new[] { "ashlayer", "_enabled", "_enabled_high", "_enabled_low", "New" })
             {
@@ -63,14 +64,14 @@ namespace DiscoBall
             Object.DestroyImmediate(wire.GetComponent<Collider>());
             wire.name = "DiscoBallWire";
             wire.transform.SetParent(item.transform, false);
-            wire.transform.localPosition = Vector3.down * (HangDistance * 0.5f);
-            wire.transform.localScale = new Vector3(0.05f, HangDistance * 0.5f, 0.05f);
+            wire.transform.localPosition = Vector3.down * (WireLength * 0.5f);
+            wire.transform.localScale = new Vector3(0.05f, WireLength * 0.5f, 0.05f);
             wire.GetComponent<MeshRenderer>().sharedMaterial = CreateFlatColorMaterial(new Color(0.2f, 0.2f, 0.2f));
 
             GameObject ball = new GameObject("DiscoBallMesh");
             ball.transform.SetParent(item.transform, false);
             ball.transform.localPosition = ballPosition;
-            ball.transform.localScale = Vector3.one * 0.5f;
+            ball.transform.localScale = Vector3.one * BallRadius;
             Mesh facetedSphere = CreateLowPolySphere(rings: 6, segments: 9, radius: 1f);
             MakeFlatShaded(facetedSphere);
             ball.AddComponent<MeshFilter>().mesh = facetedSphere;
