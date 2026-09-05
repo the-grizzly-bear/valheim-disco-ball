@@ -35,23 +35,19 @@ namespace DiscoBall
             piece.m_comfortGroup = Piece.ComfortGroup.None;
             piece.m_comfortObject = null;
 
+            Transform mount = item.transform;
             foreach (ParticleSystem ps in item.GetComponentsInChildren<ParticleSystem>(true))
             {
+                mount = ps.transform.parent != null ? ps.transform.parent : ps.transform;
                 Object.DestroyImmediate(ps.gameObject);
             }
             foreach (EffectArea area in item.GetComponentsInChildren<EffectArea>(true))
             {
                 Object.DestroyImmediate(area);
             }
-
-            Transform mount = item.transform;
-            foreach (MeshRenderer renderer in item.GetComponentsInChildren<MeshRenderer>(true))
+            foreach (MeshRenderer renderer in mount.GetComponentsInChildren<MeshRenderer>(true))
             {
-                if (renderer.transform != item.transform)
-                {
-                    mount = renderer.transform.parent != null ? renderer.transform.parent : item.transform;
-                    Object.DestroyImmediate(renderer.gameObject);
-                }
+                Object.DestroyImmediate(renderer.gameObject);
             }
 
             GameObject ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -60,11 +56,7 @@ namespace DiscoBall
             ball.transform.SetParent(mount, false);
             ball.transform.localPosition = Vector3.zero;
             ball.transform.localScale = Vector3.one * 0.5f;
-            Material ballMaterial = GetMirrorMaterial();
-            if (ballMaterial != null)
-            {
-                ball.GetComponent<MeshRenderer>().sharedMaterial = ballMaterial;
-            }
+            ball.GetComponent<MeshRenderer>().sharedMaterial = CreateMirrorMaterial();
             ball.AddComponent<DiscoSpin>();
 
             foreach (Light light in item.GetComponentsInChildren<Light>(true))
@@ -73,6 +65,12 @@ namespace DiscoBall
                 light.range = Mathf.Max(light.range, 6f);
                 light.intensity = Mathf.Max(light.intensity, 1.2f);
                 light.gameObject.AddComponent<DiscoLightCycle>();
+            }
+
+            LODGroup lodGroup = item.GetComponent<LODGroup>();
+            if (lodGroup != null)
+            {
+                Object.DestroyImmediate(lodGroup);
             }
 
             Sprite icon = RenderManager.Instance.Render(item);
@@ -93,11 +91,31 @@ namespace DiscoBall
             }));
         }
 
-        private static Material GetMirrorMaterial()
+        private static Material CreateMirrorMaterial()
         {
+            Material material;
             GameObject silver = PrefabManager.Instance.GetPrefab("Silver");
-            MeshRenderer renderer = silver != null ? silver.GetComponentInChildren<MeshRenderer>() : null;
-            return renderer != null ? renderer.sharedMaterial : null;
+            MeshRenderer silverRenderer = silver != null ? silver.GetComponentInChildren<MeshRenderer>() : null;
+            material = silverRenderer != null ? new Material(silverRenderer.sharedMaterial) : new Material(Shader.Find("Standard"));
+
+            material.mainTexture = CreateFacetTexture();
+            material.mainTextureScale = new Vector2(12f, 6f);
+            return material;
+        }
+
+        private static Texture2D CreateFacetTexture()
+        {
+            const int size = 2;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            texture.wrapMode = TextureWrapMode.Repeat;
+            texture.filterMode = FilterMode.Point;
+            texture.SetPixels(new[]
+            {
+                Color.white, new Color(0.55f, 0.6f, 0.65f),
+                new Color(0.55f, 0.6f, 0.65f), Color.white,
+            });
+            texture.Apply();
+            return texture;
         }
 
         private class DiscoSpin : MonoBehaviour
