@@ -11,8 +11,9 @@ group as Hot Tub and Maypole).
 
 ## Install
 
-Drop `DiscoBall.dll` into `BepInEx/plugins/DiscoBall/`. Needs to be on every
-client (registers a new piece).
+Drop `DiscoBall.dll` into `BepInEx/plugins/DiscoBall/`. Needs to be on the
+server and every client - it's a new, world-saved piece prefab, so the
+server has to be able to resolve it too.
 
 ## Recipe
 
