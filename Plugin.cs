@@ -65,12 +65,13 @@ namespace DiscoBall
             wire.transform.SetParent(item.transform, false);
             wire.transform.localPosition = Vector3.down * (HangDistance * 0.5f);
             wire.transform.localScale = new Vector3(0.05f, HangDistance * 0.5f, 0.05f);
+            wire.GetComponent<MeshRenderer>().sharedMaterial = CreateFlatColorMaterial(new Color(0.2f, 0.2f, 0.2f));
 
             GameObject ball = new GameObject("DiscoBallMesh");
             ball.transform.SetParent(item.transform, false);
             ball.transform.localPosition = ballPosition;
             ball.transform.localScale = Vector3.one * 0.5f;
-            Mesh facetedSphere = CreateLowPolySphere(rings: 5, segments: 6, radius: 1f);
+            Mesh facetedSphere = CreateLowPolySphere(rings: 6, segments: 9, radius: 1f);
             MakeFlatShaded(facetedSphere);
             ball.AddComponent<MeshFilter>().mesh = facetedSphere;
             ball.AddComponent<MeshRenderer>().sharedMaterial = CreateMirrorMaterial();
@@ -177,12 +178,19 @@ namespace DiscoBall
             mesh.RecalculateNormals();
         }
 
+        private static Material CreateFlatColorMaterial(Color color)
+        {
+            Material material = new Material(Shader.Find("Sprites/Default"));
+            material.color = color;
+            return material;
+        }
+
         private static Material CreateMirrorMaterial()
         {
             Material material;
             GameObject silver = PrefabManager.Instance.GetPrefab("Silver");
             MeshRenderer silverRenderer = silver != null ? silver.GetComponentInChildren<MeshRenderer>() : null;
-            material = silverRenderer != null ? new Material(silverRenderer.sharedMaterial) : new Material(Shader.Find("Standard"));
+            material = silverRenderer != null ? new Material(silverRenderer.sharedMaterial) : new Material(Shader.Find("Sprites/Default"));
 
             material.color = new Color(0.85f, 0.87f, 0.9f);
             material.mainTexture = CreateFacetTexture();
