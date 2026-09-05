@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using BepInEx;
 using Jotunn.Configs;
 using Jotunn.Entities;
@@ -48,7 +49,7 @@ namespace DiscoBall
                 ballPosition = ashLayer.localPosition;
             }
 
-            foreach (string childName in new[] { "ashlayer", "_enabled", "_enabled_high", "_enabled_low" })
+            foreach (string childName in new[] { "ashlayer", "_enabled", "_enabled_high", "_enabled_low", "New" })
             {
                 Transform child = item.transform.Find(childName);
                 if (child != null)
@@ -61,14 +62,22 @@ namespace DiscoBall
                 Object.DestroyImmediate(area);
             }
 
-            GameObject ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            Object.DestroyImmediate(ball.GetComponent<Collider>());
-            ball.name = "DiscoBallMesh";
+            GameObject wire = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            Object.DestroyImmediate(wire.GetComponent<Collider>());
+            wire.name = "DiscoBallWire";
+            wire.transform.SetParent(item.transform, false);
+            float wireLength = Mathf.Abs(ballPosition.y);
+            wire.transform.localPosition = new Vector3(ballPosition.x, ballPosition.y * 0.5f, ballPosition.z);
+            wire.transform.localScale = new Vector3(0.03f, wireLength * 0.5f, 0.03f);
+
+            GameObject ball = new GameObject("DiscoBallMesh");
             ball.transform.SetParent(item.transform, false);
             ball.transform.localPosition = ballPosition;
             ball.transform.localScale = Vector3.one * 0.5f;
-            ball.GetComponent<MeshRenderer>().sharedMaterial = CreateMirrorMaterial();
-            MakeFlatShaded(ball.GetComponent<MeshFilter>().mesh);
+            Mesh facetedSphere = CreateLowPolySphere(rings: 8, segments: 10, radius: 1f);
+            MakeFlatShaded(facetedSphere);
+            ball.AddComponent<MeshFilter>().mesh = facetedSphere;
+            ball.AddComponent<MeshRenderer>().sharedMaterial = CreateMirrorMaterial();
             ball.AddComponent<DiscoSpin>();
 
             GameObject lightGo = new GameObject("DiscoLight");
@@ -102,6 +111,53 @@ namespace DiscoBall
                     new RequirementConfig { Item = "FineWood", Amount = 4 },
                 },
             }));
+        }
+
+        private static Mesh CreateLowPolySphere(int rings, int segments, float radius)
+        {
+            List<Vector3> vertices = new List<Vector3>();
+            List<Vector2> uvs = new List<Vector2>();
+            List<int> triangles = new List<int>();
+
+            for (int r = 0; r <= rings; r++)
+            {
+                float v = (float)r / rings;
+                float phi = v * Mathf.PI;
+                for (int s = 0; s <= segments; s++)
+                {
+                    float u = (float)s / segments;
+                    float theta = u * Mathf.PI * 2f;
+                    float x = Mathf.Sin(phi) * Mathf.Cos(theta);
+                    float y = Mathf.Cos(phi);
+                    float z = Mathf.Sin(phi) * Mathf.Sin(theta);
+                    vertices.Add(new Vector3(x, y, z) * radius);
+                    uvs.Add(new Vector2(u, v));
+                }
+            }
+
+            int rowLength = segments + 1;
+            for (int r = 0; r < rings; r++)
+            {
+                for (int s = 0; s < segments; s++)
+                {
+                    int a = r * rowLength + s;
+                    int b = a + rowLength;
+                    triangles.Add(a);
+                    triangles.Add(b);
+                    triangles.Add(a + 1);
+                    triangles.Add(a + 1);
+                    triangles.Add(b);
+                    triangles.Add(b + 1);
+                }
+            }
+
+            Mesh mesh = new Mesh();
+            mesh.SetVertices(vertices);
+            mesh.SetUVs(0, uvs);
+            mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
         }
 
         private static void MakeFlatShaded(Mesh mesh)
