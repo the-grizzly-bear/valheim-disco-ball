@@ -68,6 +68,7 @@ namespace DiscoBall
             ball.transform.localPosition = ballPosition;
             ball.transform.localScale = Vector3.one * 0.5f;
             ball.GetComponent<MeshRenderer>().sharedMaterial = CreateMirrorMaterial();
+            MakeFlatShaded(ball.GetComponent<MeshFilter>().mesh);
             ball.AddComponent<DiscoSpin>();
 
             GameObject lightGo = new GameObject("DiscoLight");
@@ -101,6 +102,27 @@ namespace DiscoBall
                     new RequirementConfig { Item = "FineWood", Amount = 4 },
                 },
             }));
+        }
+
+        private static void MakeFlatShaded(Mesh mesh)
+        {
+            Vector3[] oldVertices = mesh.vertices;
+            Vector2[] oldUv = mesh.uv;
+            int[] triangles = mesh.triangles;
+
+            Vector3[] newVertices = new Vector3[triangles.Length];
+            Vector2[] newUv = new Vector2[triangles.Length];
+            for (int i = 0; i < triangles.Length; i++)
+            {
+                newVertices[i] = oldVertices[triangles[i]];
+                newUv[i] = oldUv[triangles[i]];
+                triangles[i] = i;
+            }
+
+            mesh.vertices = newVertices;
+            mesh.uv = newUv;
+            mesh.triangles = triangles;
+            mesh.RecalculateNormals();
         }
 
         private static Material CreateMirrorMaterial()
