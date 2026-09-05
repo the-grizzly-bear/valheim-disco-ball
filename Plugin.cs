@@ -75,6 +75,7 @@ namespace DiscoBall
             MakeFlatShaded(facetedSphere);
             ball.AddComponent<MeshFilter>().mesh = facetedSphere;
             ball.AddComponent<MeshRenderer>().sharedMaterial = CreateMirrorMaterial();
+            ball.AddComponent<SphereCollider>().radius = 1f;
             ball.AddComponent<DiscoSpin>();
 
             GameObject lightGo = new GameObject("DiscoLight");
