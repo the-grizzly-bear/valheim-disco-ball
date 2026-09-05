@@ -15,6 +15,8 @@ namespace DiscoBall
         public const string PluginName = "DiscoBall";
         public const string PluginVersion = "1.0.0";
 
+        private const float HangDistance = 0.5f;
+
         private static readonly Color[] LightColors =
         {
             Color.red, Color.green, Color.blue, Color.yellow, Color.magenta, Color.cyan,
@@ -42,12 +44,7 @@ namespace DiscoBall
                 Object.DestroyImmediate(fireplace);
             }
 
-            Vector3 ballPosition = Vector3.up * 0.3f;
-            Transform ashLayer = item.transform.Find("ashlayer");
-            if (ashLayer != null)
-            {
-                ballPosition = ashLayer.localPosition;
-            }
+            Vector3 ballPosition = Vector3.down * HangDistance;
 
             foreach (string childName in new[] { "ashlayer", "_enabled", "_enabled_high", "_enabled_low", "New" })
             {
@@ -66,15 +63,14 @@ namespace DiscoBall
             Object.DestroyImmediate(wire.GetComponent<Collider>());
             wire.name = "DiscoBallWire";
             wire.transform.SetParent(item.transform, false);
-            float wireLength = Mathf.Abs(ballPosition.y);
-            wire.transform.localPosition = new Vector3(ballPosition.x, ballPosition.y * 0.5f, ballPosition.z);
-            wire.transform.localScale = new Vector3(0.03f, wireLength * 0.5f, 0.03f);
+            wire.transform.localPosition = Vector3.down * (HangDistance * 0.5f);
+            wire.transform.localScale = new Vector3(0.05f, HangDistance * 0.5f, 0.05f);
 
             GameObject ball = new GameObject("DiscoBallMesh");
             ball.transform.SetParent(item.transform, false);
             ball.transform.localPosition = ballPosition;
             ball.transform.localScale = Vector3.one * 0.5f;
-            Mesh facetedSphere = CreateLowPolySphere(rings: 8, segments: 10, radius: 1f);
+            Mesh facetedSphere = CreateLowPolySphere(rings: 5, segments: 6, radius: 1f);
             MakeFlatShaded(facetedSphere);
             ball.AddComponent<MeshFilter>().mesh = facetedSphere;
             ball.AddComponent<MeshRenderer>().sharedMaterial = CreateMirrorMaterial();
@@ -188,8 +184,9 @@ namespace DiscoBall
             MeshRenderer silverRenderer = silver != null ? silver.GetComponentInChildren<MeshRenderer>() : null;
             material = silverRenderer != null ? new Material(silverRenderer.sharedMaterial) : new Material(Shader.Find("Standard"));
 
+            material.color = new Color(0.85f, 0.87f, 0.9f);
             material.mainTexture = CreateFacetTexture();
-            material.mainTextureScale = new Vector2(12f, 6f);
+            material.mainTextureScale = new Vector2(6f, 3f);
             return material;
         }
 
@@ -201,8 +198,8 @@ namespace DiscoBall
             texture.filterMode = FilterMode.Point;
             texture.SetPixels(new[]
             {
-                Color.white, new Color(0.55f, 0.6f, 0.65f),
-                new Color(0.55f, 0.6f, 0.65f), Color.white,
+                Color.white, new Color(0.75f, 0.8f, 0.85f),
+                new Color(0.75f, 0.8f, 0.85f), Color.white,
             });
             texture.Apply();
             return texture;
