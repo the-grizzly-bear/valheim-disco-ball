@@ -35,37 +35,49 @@ namespace DiscoBall
             piece.m_comfortGroup = Piece.ComfortGroup.None;
             piece.m_comfortObject = null;
 
-            Transform mount = item.transform;
-            foreach (ParticleSystem ps in item.GetComponentsInChildren<ParticleSystem>(true))
+            Fireplace fireplace = item.GetComponent<Fireplace>();
+            if (fireplace != null)
             {
-                mount = ps.transform.parent != null ? ps.transform.parent : ps.transform;
-                Object.DestroyImmediate(ps.gameObject);
+                Object.DestroyImmediate(fireplace);
+            }
+
+            Vector3 ballPosition = Vector3.up * 0.3f;
+            Transform ashLayer = item.transform.Find("ashlayer");
+            if (ashLayer != null)
+            {
+                ballPosition = ashLayer.localPosition;
+            }
+
+            foreach (string childName in new[] { "ashlayer", "_enabled", "_enabled_high", "_enabled_low" })
+            {
+                Transform child = item.transform.Find(childName);
+                if (child != null)
+                {
+                    Object.DestroyImmediate(child.gameObject);
+                }
             }
             foreach (EffectArea area in item.GetComponentsInChildren<EffectArea>(true))
             {
                 Object.DestroyImmediate(area);
             }
-            foreach (MeshRenderer renderer in mount.GetComponentsInChildren<MeshRenderer>(true))
-            {
-                Object.DestroyImmediate(renderer.gameObject);
-            }
 
             GameObject ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             Object.DestroyImmediate(ball.GetComponent<Collider>());
             ball.name = "DiscoBallMesh";
-            ball.transform.SetParent(mount, false);
-            ball.transform.localPosition = Vector3.zero;
+            ball.transform.SetParent(item.transform, false);
+            ball.transform.localPosition = ballPosition;
             ball.transform.localScale = Vector3.one * 0.5f;
             ball.GetComponent<MeshRenderer>().sharedMaterial = CreateMirrorMaterial();
             ball.AddComponent<DiscoSpin>();
 
-            foreach (Light light in item.GetComponentsInChildren<Light>(true))
-            {
-                light.color = Color.white;
-                light.range = Mathf.Max(light.range, 6f);
-                light.intensity = Mathf.Max(light.intensity, 1.2f);
-                light.gameObject.AddComponent<DiscoLightCycle>();
-            }
+            GameObject lightGo = new GameObject("DiscoLight");
+            lightGo.transform.SetParent(ball.transform, false);
+            Light light = lightGo.AddComponent<Light>();
+            light.type = LightType.Point;
+            light.range = 8f;
+            light.intensity = 1.5f;
+            light.color = Color.white;
+            lightGo.AddComponent<DiscoLightCycle>();
 
             LODGroup lodGroup = item.GetComponent<LODGroup>();
             if (lodGroup != null)
