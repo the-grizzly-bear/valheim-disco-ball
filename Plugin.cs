@@ -17,6 +17,7 @@ namespace DiscoBall
 
         private const float ChainScale = 0.5f;
         private const float BallRadius = 0.35f;
+        private const int ChainSegmentCount = 4;
 
         private static readonly Color[] LightColors =
         {
@@ -58,8 +59,8 @@ namespace DiscoBall
                 Object.DestroyImmediate(area);
             }
 
-            float chainBottomOffset = AddRealChainVisual(item.transform);
-            Vector3 ballPosition = Vector3.down * (chainBottomOffset + BallRadius);
+            AddChainStackUpward(item.transform, ChainSegmentCount);
+            Vector3 ballPosition = Vector3.down * BallRadius;
 
             GameObject ball = new GameObject("DiscoBallMesh");
             ball.transform.SetParent(item.transform, false);
@@ -173,34 +174,36 @@ namespace DiscoBall
             mesh.RecalculateNormals();
         }
 
-        private static float AddRealChainVisual(Transform parent)
+        private static void AddChainStackUpward(Transform parent, int segmentCount)
         {
             GameObject chainSource = PrefabManager.Instance.GetPrefab("Chain");
             Transform sourceModel = chainSource != null ? chainSource.transform.Find("model") : null;
             MeshFilter sourceFilter = sourceModel != null ? sourceModel.GetComponent<MeshFilter>() : null;
             if (sourceFilter == null)
             {
-                return 0f;
+                return;
             }
 
-            GameObject chainVisual = Object.Instantiate(sourceModel.gameObject, parent, false);
-            chainVisual.name = "DiscoBallChain";
-            Collider chainCollider = chainVisual.GetComponent<Collider>();
-            if (chainCollider != null)
+            float segmentHeight = sourceFilter.sharedMesh.bounds.size.y * ChainScale;
+            for (int i = 0; i < segmentCount; i++)
             {
-                Object.DestroyImmediate(chainCollider);
-            }
-            LODGroup chainLod = chainVisual.GetComponent<LODGroup>();
-            if (chainLod != null)
-            {
-                Object.DestroyImmediate(chainLod);
-            }
+                GameObject chainVisual = Object.Instantiate(sourceModel.gameObject, parent, false);
+                chainVisual.name = "DiscoBallChain" + i;
+                Collider chainCollider = chainVisual.GetComponent<Collider>();
+                if (chainCollider != null)
+                {
+                    Object.DestroyImmediate(chainCollider);
+                }
+                LODGroup chainLod = chainVisual.GetComponent<LODGroup>();
+                if (chainLod != null)
+                {
+                    Object.DestroyImmediate(chainLod);
+                }
 
-            chainVisual.transform.localPosition = Vector3.zero;
-            chainVisual.transform.localRotation = Quaternion.identity;
-            chainVisual.transform.localScale = Vector3.one * ChainScale;
-
-            return sourceFilter.sharedMesh.bounds.size.y * ChainScale;
+                chainVisual.transform.localPosition = Vector3.up * (segmentHeight * (i + 0.5f));
+                chainVisual.transform.localRotation = Quaternion.identity;
+                chainVisual.transform.localScale = Vector3.one * ChainScale;
+            }
         }
 
         private static Material CreateMirrorMaterial()
