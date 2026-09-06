@@ -59,8 +59,9 @@ namespace DiscoBall
                 Object.DestroyImmediate(area);
             }
 
-            AddChainStackUpward(item.transform, ChainSegmentCount);
             Vector3 ballPosition = Vector3.up * (BallRadius * 0.5f);
+            float ballTop = ballPosition.y + BallRadius;
+            AddChainStackUpward(item.transform, ChainSegmentCount, ballTop);
 
             GameObject ball = new GameObject("DiscoBallMesh");
             ball.transform.SetParent(item.transform, false);
@@ -175,7 +176,7 @@ namespace DiscoBall
             mesh.RecalculateNormals();
         }
 
-        private static void AddChainStackUpward(Transform parent, int segmentCount)
+        private static void AddChainStackUpward(Transform parent, int segmentCount, float baseHeight)
         {
             GameObject chainSource = PrefabManager.Instance.GetPrefab("Chain");
             Transform sourceModel = chainSource != null ? chainSource.transform.Find("model") : null;
@@ -201,7 +202,7 @@ namespace DiscoBall
                     Object.DestroyImmediate(chainLod);
                 }
 
-                chainVisual.transform.localPosition = Vector3.up * (segmentHeight * (i + 0.5f));
+                chainVisual.transform.localPosition = Vector3.up * (baseHeight + segmentHeight * (i + 0.5f));
                 chainVisual.transform.localRotation = Quaternion.identity;
                 chainVisual.transform.localScale = Vector3.one * ChainScale;
             }
