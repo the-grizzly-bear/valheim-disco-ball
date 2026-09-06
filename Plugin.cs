@@ -16,7 +16,7 @@ namespace DiscoBall
         public const string PluginVersion = "1.0.0";
 
         private const float WireLength = 0.08f;
-        private const float BallRadius = 0.15f;
+        private const float BallRadius = 0.35f;
 
         private static readonly Color[] LightColors =
         {
