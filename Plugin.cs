@@ -17,7 +17,7 @@ namespace DiscoBall
 
         private const float ChainScale = 0.5f;
         private const float BallRadius = 0.35f;
-        private const int ChainSegmentCount = 4;
+        private const int ChainSegmentCount = 3;
 
         private static readonly Color[] LightColors =
         {
