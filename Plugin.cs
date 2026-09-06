@@ -15,8 +15,8 @@ namespace DiscoBall
         public const string PluginName = "DiscoBall";
         public const string PluginVersion = "1.0.0";
 
-        private const float WireLength = 0.15f;
-        private const float BallRadius = 0.25f;
+        private const float WireLength = 0.08f;
+        private const float BallRadius = 0.15f;
 
         private static readonly Color[] LightColors =
         {
@@ -176,16 +176,23 @@ namespace DiscoBall
 
         private static void AddRealChainVisual(Transform parent)
         {
+            GameObject wire = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            Object.DestroyImmediate(wire.GetComponent<Collider>());
+            wire.name = "DiscoBallWire";
+            wire.transform.SetParent(parent, false);
+            wire.transform.localPosition = Vector3.down * (WireLength * 0.5f);
+            wire.transform.localScale = new Vector3(0.04f, WireLength * 0.5f, 0.04f);
+            wire.GetComponent<MeshRenderer>().sharedMaterial = CreateFlatColorMaterial(new Color(0.2f, 0.2f, 0.2f));
+
             GameObject chainSource = PrefabManager.Instance.GetPrefab("Chain");
             Transform sourceModel = chainSource != null ? chainSource.transform.Find("model") : null;
-            MeshFilter sourceFilter = sourceModel != null ? sourceModel.GetComponent<MeshFilter>() : null;
-            if (sourceFilter == null)
+            if (sourceModel == null)
             {
                 return;
             }
 
             GameObject chainVisual = Object.Instantiate(sourceModel.gameObject, parent, false);
-            chainVisual.name = "DiscoBallChain";
+            chainVisual.name = "DiscoBallChainAccent";
             Collider chainCollider = chainVisual.GetComponent<Collider>();
             if (chainCollider != null)
             {
@@ -197,10 +204,9 @@ namespace DiscoBall
                 Object.DestroyImmediate(chainLod);
             }
 
-            float naturalHeight = Mathf.Max(sourceFilter.sharedMesh.bounds.size.y, 0.01f);
-            chainVisual.transform.localPosition = Vector3.down * (WireLength * 0.5f);
+            chainVisual.transform.localPosition = Vector3.zero;
             chainVisual.transform.localRotation = Quaternion.identity;
-            chainVisual.transform.localScale = new Vector3(1f, WireLength / naturalHeight, 1f);
+            chainVisual.transform.localScale = Vector3.one * 0.3f;
         }
 
         private static Material CreateFlatColorMaterial(Color color)
