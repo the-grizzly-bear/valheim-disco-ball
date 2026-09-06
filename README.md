@@ -17,7 +17,7 @@ server has to be able to resolve it too.
 
 ## Recipe
 
-Crafted at a Workbench: Bronze x5, Fine wood x4.
+Crafted at a Workbench: Bronze x5, Fine wood x4, Chain x1.
 
 ## Build from source
 
