@@ -36,6 +36,7 @@ namespace DiscoBall
             GameObject item = PrefabManager.Instance.CreateClonedPrefab("piece_discoball", "piece_brazierceiling01");
 
             Piece piece = item.GetComponent<Piece>();
+            // piece.m_comfort = 2;
             piece.m_comfort = 0;
 
             Fireplace fireplace = item.GetComponent<Fireplace>();
