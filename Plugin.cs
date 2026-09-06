@@ -36,9 +36,7 @@ namespace DiscoBall
             GameObject item = PrefabManager.Instance.CreateClonedPrefab("piece_discoball", "piece_brazierceiling01");
 
             Piece piece = item.GetComponent<Piece>();
-            piece.m_comfort = 2;
-            piece.m_comfortGroup = Piece.ComfortGroup.None;
-            piece.m_comfortObject = null;
+            piece.m_comfort = 0;
 
             Fireplace fireplace = item.GetComponent<Fireplace>();
             if (fireplace != null)
@@ -100,7 +98,7 @@ namespace DiscoBall
             PieceManager.Instance.AddPiece(new CustomPiece(item, fixReference: true, new PieceConfig
             {
                 Name = "Disco Ball",
-                Description = "Reflects the light of a thousand lost dreams. Purely decorative, wildly comforting.",
+                Description = "Reflects the light of a thousand lost dreams. Purely decorative.",
                 PieceTable = "Hammer",
                 Category = "Furniture",
                 CraftingStation = "piece_workbench",
