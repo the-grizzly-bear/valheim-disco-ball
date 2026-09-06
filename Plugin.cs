@@ -17,7 +17,7 @@ namespace DiscoBall
 
         private const float ChainScale = 0.5f;
         private const float BallRadius = 0.35f;
-        private const int ChainSegmentCount = 3;
+        private const int ChainSegmentCount = 4;
 
         private static readonly Color[] LightColors =
         {
@@ -60,7 +60,7 @@ namespace DiscoBall
             }
 
             AddChainStackUpward(item.transform, ChainSegmentCount);
-            Vector3 ballPosition = Vector3.down * BallRadius;
+            Vector3 ballPosition = Vector3.up * (BallRadius * 0.5f);
 
             GameObject ball = new GameObject("DiscoBallMesh");
             ball.transform.SetParent(item.transform, false);
@@ -102,6 +102,7 @@ namespace DiscoBall
                 {
                     new RequirementConfig { Item = "Bronze", Amount = 5 },
                     new RequirementConfig { Item = "FineWood", Amount = 4 },
+                    new RequirementConfig { Item = "Chain", Amount = 1 },
                 },
             }));
         }
