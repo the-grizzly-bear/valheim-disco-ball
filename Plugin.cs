@@ -15,7 +15,7 @@ namespace DiscoBall
         public const string PluginName = "DiscoBall";
         public const string PluginVersion = "1.0.0";
 
-        private const float WireLength = 0.01f;
+        private const float ChainScale = 0.5f;
         private const float BallRadius = 0.35f;
 
         private static readonly Color[] LightColors =
@@ -45,8 +45,6 @@ namespace DiscoBall
                 Object.DestroyImmediate(fireplace);
             }
 
-            Vector3 ballPosition = Vector3.down * (WireLength + BallRadius);
-
             foreach (string childName in new[] { "ashlayer", "_enabled", "_enabled_high", "_enabled_low", "New" })
             {
                 Transform child = item.transform.Find(childName);
@@ -60,7 +58,8 @@ namespace DiscoBall
                 Object.DestroyImmediate(area);
             }
 
-            AddRealChainVisual(item.transform);
+            float chainBottomOffset = AddRealChainVisual(item.transform);
+            Vector3 ballPosition = Vector3.down * (chainBottomOffset + BallRadius);
 
             GameObject ball = new GameObject("DiscoBallMesh");
             ball.transform.SetParent(item.transform, false);
@@ -174,25 +173,18 @@ namespace DiscoBall
             mesh.RecalculateNormals();
         }
 
-        private static void AddRealChainVisual(Transform parent)
+        private static float AddRealChainVisual(Transform parent)
         {
-            GameObject wire = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            Object.DestroyImmediate(wire.GetComponent<Collider>());
-            wire.name = "DiscoBallWire";
-            wire.transform.SetParent(parent, false);
-            wire.transform.localPosition = Vector3.down * (WireLength * 0.5f);
-            wire.transform.localScale = new Vector3(0.04f, WireLength * 0.5f, 0.04f);
-            wire.GetComponent<MeshRenderer>().sharedMaterial = CreateFlatColorMaterial(new Color(0.2f, 0.2f, 0.2f));
-
             GameObject chainSource = PrefabManager.Instance.GetPrefab("Chain");
             Transform sourceModel = chainSource != null ? chainSource.transform.Find("model") : null;
-            if (sourceModel == null)
+            MeshFilter sourceFilter = sourceModel != null ? sourceModel.GetComponent<MeshFilter>() : null;
+            if (sourceFilter == null)
             {
-                return;
+                return 0f;
             }
 
             GameObject chainVisual = Object.Instantiate(sourceModel.gameObject, parent, false);
-            chainVisual.name = "DiscoBallChainAccent";
+            chainVisual.name = "DiscoBallChain";
             Collider chainCollider = chainVisual.GetComponent<Collider>();
             if (chainCollider != null)
             {
@@ -206,14 +198,9 @@ namespace DiscoBall
 
             chainVisual.transform.localPosition = Vector3.zero;
             chainVisual.transform.localRotation = Quaternion.identity;
-            chainVisual.transform.localScale = Vector3.one * 0.3f;
-        }
+            chainVisual.transform.localScale = Vector3.one * ChainScale;
 
-        private static Material CreateFlatColorMaterial(Color color)
-        {
-            Material material = new Material(Shader.Find("Sprites/Default"));
-            material.color = color;
-            return material;
+            return sourceFilter.sharedMesh.bounds.size.y * ChainScale;
         }
 
         private static Material CreateMirrorMaterial()
