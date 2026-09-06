@@ -61,7 +61,8 @@ namespace DiscoBall
 
             Vector3 ballPosition = Vector3.up * (BallRadius * 0.5f);
             float ballTop = ballPosition.y + BallRadius;
-            AddChainStackUpward(item.transform, ChainSegmentCount, ballTop);
+            float chainSegmentHeight = GetChainSegmentHeight();
+            AddChainSegment(item.transform, 0, ballTop, chainSegmentHeight);
 
             GameObject ball = new GameObject("DiscoBallMesh");
             ball.transform.SetParent(item.transform, false);
@@ -90,6 +91,11 @@ namespace DiscoBall
             }
 
             Sprite icon = RenderManager.Instance.Render(item);
+
+            for (int i = 1; i < ChainSegmentCount; i++)
+            {
+                AddChainSegment(item.transform, i, ballTop, chainSegmentHeight);
+            }
 
             PieceManager.Instance.AddPiece(new CustomPiece(item, fixReference: true, new PieceConfig
             {
@@ -176,36 +182,39 @@ namespace DiscoBall
             mesh.RecalculateNormals();
         }
 
-        private static void AddChainStackUpward(Transform parent, int segmentCount, float baseHeight)
+        private static float GetChainSegmentHeight()
         {
             GameObject chainSource = PrefabManager.Instance.GetPrefab("Chain");
             Transform sourceModel = chainSource != null ? chainSource.transform.Find("model") : null;
             MeshFilter sourceFilter = sourceModel != null ? sourceModel.GetComponent<MeshFilter>() : null;
-            if (sourceFilter == null)
+            return sourceFilter != null ? sourceFilter.sharedMesh.bounds.size.y * ChainScale : 0f;
+        }
+
+        private static void AddChainSegment(Transform parent, int index, float baseHeight, float segmentHeight)
+        {
+            GameObject chainSource = PrefabManager.Instance.GetPrefab("Chain");
+            Transform sourceModel = chainSource != null ? chainSource.transform.Find("model") : null;
+            if (sourceModel == null)
             {
                 return;
             }
 
-            float segmentHeight = sourceFilter.sharedMesh.bounds.size.y * ChainScale;
-            for (int i = 0; i < segmentCount; i++)
+            GameObject chainVisual = Object.Instantiate(sourceModel.gameObject, parent, false);
+            chainVisual.name = "DiscoBallChain" + index;
+            Collider chainCollider = chainVisual.GetComponent<Collider>();
+            if (chainCollider != null)
             {
-                GameObject chainVisual = Object.Instantiate(sourceModel.gameObject, parent, false);
-                chainVisual.name = "DiscoBallChain" + i;
-                Collider chainCollider = chainVisual.GetComponent<Collider>();
-                if (chainCollider != null)
-                {
-                    Object.DestroyImmediate(chainCollider);
-                }
-                LODGroup chainLod = chainVisual.GetComponent<LODGroup>();
-                if (chainLod != null)
-                {
-                    Object.DestroyImmediate(chainLod);
-                }
-
-                chainVisual.transform.localPosition = Vector3.up * (baseHeight + segmentHeight * (i + 0.5f));
-                chainVisual.transform.localRotation = Quaternion.identity;
-                chainVisual.transform.localScale = Vector3.one * ChainScale;
+                Object.DestroyImmediate(chainCollider);
             }
+            LODGroup chainLod = chainVisual.GetComponent<LODGroup>();
+            if (chainLod != null)
+            {
+                Object.DestroyImmediate(chainLod);
+            }
+
+            chainVisual.transform.localPosition = Vector3.up * (baseHeight + segmentHeight * (index + 0.5f));
+            chainVisual.transform.localRotation = Quaternion.identity;
+            chainVisual.transform.localScale = Vector3.one * ChainScale;
         }
 
         private static Material CreateMirrorMaterial()
