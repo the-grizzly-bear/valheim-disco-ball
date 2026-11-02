@@ -13,7 +13,7 @@ namespace DiscoBall
     {
         public const string PluginGUID = "mishka.valheim.discoball";
         public const string PluginName = "DiscoBall";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "1.0.1";
 
         private const float ChainScale = 0.5f;
         private const float BallRadius = 0.35f;

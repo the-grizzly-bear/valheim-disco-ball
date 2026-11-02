@@ -1,0 +1,10 @@
+{
+  "name": "DiscoBall",
+  "version_number": "1.0.1",
+  "website_url": "https://github.com/the-grizzly-bear/valheim-disco-ball",
+  "description": "Craftable, spinning, color-cycling disco ball ceiling piece. Purely decorative.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2333",
+    "ValheimModding-Jotunn-2.29.2"
+  ]
+}
